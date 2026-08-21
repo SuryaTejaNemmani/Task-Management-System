@@ -1,0 +1,11 @@
+{
+  "name": "taskflow-deployment",
+  "version": "1.0.0",
+  "description": "Root package.json for deploying frontend and backend together",
+  "scripts": {
+    "install-all": "npm install --prefix backend && npm install --include=dev --prefix frontend",
+    "build": "npm run install-all && npm run build --prefix frontend",
+    "start": "npm start --prefix backend"
+  },
+  "author": ""
+}
