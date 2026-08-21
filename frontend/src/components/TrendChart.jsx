@@ -3,7 +3,7 @@ export default function TrendChart({ data = [] }) {
   const maxCount = Math.max(...data.map((d) => d.count), 1);
 
   const dayLabels = data.map((d) => {
-    const date = new Date(d.date);
+    const date = new Date(d.date + 'T00:00:00');
     return date.toLocaleDateString(undefined, { weekday: 'short' });
   });
 

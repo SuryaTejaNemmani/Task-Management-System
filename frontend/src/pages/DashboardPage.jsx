@@ -23,13 +23,14 @@ export default function DashboardPage() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const fetchData = async () => {
-    setLoading(true);
+  const fetchData = async (isInitial = false) => {
+    if (isInitial) setLoading(true);
     setError('');
     try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
       const [summaryRes, trendRes, tasksRes] = await Promise.all([
         client.get('/analytics/summary'),
-        client.get('/analytics/trend'),
+        client.get(`/analytics/trend?timezone=${encodeURIComponent(tz)}`),
         client.get('/tasks?limit=5&sortBy=createdAt&order=desc'),
       ]);
       setSummary(summaryRes.data.data);
@@ -38,15 +39,15 @@ export default function DashboardPage() {
     } catch (err) {
       setError(err.message);
     } finally {
-      setLoading(false);
+      if (isInitial) setLoading(false);
     }
   };
 
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => { fetchData(true); }, []);
 
   const handleTaskUpdated = (updatedTask) => {
     setRecentTasks((prev) => prev.map((t) => (t._id === updatedTask._id ? updatedTask : t)));
-    fetchData(); // refresh analytics too
+    fetchData(false); // refresh analytics in background without reloading the page
   };
 
   const handleDeleteConfirm = async () => {
@@ -55,7 +56,7 @@ export default function DashboardPage() {
       await client.delete(`/tasks/${deleteTarget._id}`);
       setRecentTasks((prev) => prev.filter((t) => t._id !== deleteTarget._id));
       showToast('Task deleted.');
-      fetchData();
+      fetchData(false); // background refresh
     } catch (err) {
       showToast(err.message, 'error');
     } finally {
